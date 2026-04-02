@@ -1,6 +1,6 @@
 import time
 import requests
-from config.config_editor import get_config
+from .config.config_editor import get_config
 from rich.console import Console
 
 console = Console()
