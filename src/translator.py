@@ -13,7 +13,7 @@ class DeepLTranslator:
 
         if not self.api_key:
             raise ValueError(
-                "Erro: DEEPL_API_KEY não encontrada no arquivo .env"
+                "Error: DEEPL_API_KEY not found in .env file"
             )
 
         self.source = source.upper()
@@ -45,7 +45,7 @@ class DeepLTranslator:
             return data["translations"][0]["text"]
 
         except requests.exceptions.RequestException as e:
-            return f"Erro na requisição: {e}"
+            return f"Request error: {e}"
 
         except (KeyError, IndexError):
-            return f"Resposta inesperada da API: {response.text}"
+            return f"Unexpected API response: {response.text}"

@@ -1,150 +1,150 @@
 # AnkiFlow
 
-Facilitador de tradução e integração automática com o Anki. Traduza palavras e frases diretamente para cartões no Anki usando a API do DeepL.
+Translation helper and automatic Anki integration. Translate words and phrases directly into Anki cards using the DeepL API.
 
-## Funcionalidades
+## Features
 
-- Tradução rápida de texto via DeepL.
-- Integração automática com Anki através do AnkiConnect.
-- Interface de linha de comando rica com Rich.
-- Gerenciamento de configurações (deck padrão, URL do Anki).
-- Suporte a múltiplos idiomas.
+- Fast text translation via DeepL.
+- Automatic Anki integration through AnkiConnect.
+- Rich command-line interface with Rich.
+- Settings management (default deck, Anki URL).
+- Support for multiple languages.
 
-## Instalação
+## Installation
 
-### Pré-requisitos
+### Prerequisites
 
-- Python 3.8 ou superior.
-- Conta no [DeepL](https://www.deepl.com/) para obter uma chave de API.
-- Anki instalado com o plugin [AnkiConnect](https://ankiweb.net/shared/info/2055492159) ativado.
+- Python 3.8 or higher.
+- A [DeepL](https://www.deepl.com/) account to obtain an API key.
+- Anki installed with the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin enabled.
 
-### Passos
+### Steps
 
-1. Clone o repositório:
+1. Clone the repository:
    ```bash
    git clone https://github.com/seu-usuario/ankiflow.git
    cd ankiflow
    ```
 
-2. Crie um ambiente virtual:
+2. Create a virtual environment:
    ```bash
    python -m venv .venv
-   .venv\Scripts\activate  # No Windows
+   .venv\Scripts\activate  # On Windows
    ```
 
-3. Instale as dependências:
+3. Install dependencies:
    ```bash
    pip install -e .
    ```
 
-4. Configure o arquivo `.env` com sua chave do DeepL:
+4. Configure the `.env` file with your DeepL key:
    ```
-   DEEPL_API_KEY=sua_chave_aqui
+   DEEPL_API_KEY=your_key_here
    ```
 
-## Configuração
+## Configuration
 
-### Configurações do Anki
+### Anki Settings
 
-Use os comandos de configuração para ajustar o deck padrão e a URL do AnkiConnect:
+Use the config commands to adjust the default deck and AnkiConnect URL:
 
-- Exibir configurações atuais:
+- Display current settings:
   ```bash
   ankiflow config show
   ```
 
-- Alterar uma configuração:
+- Change a setting:
   ```bash
-  ankiflow config set default_deck_name "Meu Deck"
+  ankiflow config set default_deck_name "My Deck"
   ankiflow config set anki_url "http://localhost:8765"
   ```
 
-### Arquivo de Configuração
+### Configuration File
 
-As configurações são salvas em `src/config/config.json`. Valores padrão:
+Settings are saved in `src/config/config.json`. Default values:
 - `default_deck_name`: "AnkiFlow"
 - `anki_url`: "http://localhost:8765"
 
-## Uso
+## Usage
 
-### Comando de Tradução
+### Translate Command
 
-Traduza uma palavra ou frase e salve automaticamente no Anki:
+Translate a word or phrase and automatically save it to Anki:
 
 ```bash
 ankiflow translate hello world
 ```
 
-Opções:
-- `--source` ou `-s`: Idioma de origem (padrão: en).
-- `--target` ou `-t`: Idioma de destino (padrão: pt).
-- `--save` ou `--no-save`: Salvar no Anki (padrão: salvar).
+Options:
+- `--source` or `-s`: Source language (default: en).
+- `--target` or `-t`: Target language (default: pt).
+- `--save` or `--no-save`: Save to Anki (default: save).
 
-Exemplos:
-- Traduzir sem salvar:
+Examples:
+- Translate without saving:
   ```bash
   ankiflow translate good morning --no-save
   ```
 
-- Traduzir de português para inglês:
+- Translate from Portuguese to English:
   ```bash
   ankiflow translate bom dia --source pt --target en
   ```
 
-### Outros Comandos
+### Other Commands
 
-- Ajuda geral:
+- General help:
   ```bash
   ankiflow --help
   ```
 
-- Ajuda de um comando específico:
+- Help for a specific command:
   ```bash
   ankiflow translate --help
   ```
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 AnkiFlow/
 ├── src/
 │   ├── __init__.py
-│   ├── main.py          # CLI principal
-│   ├── translator.py    # Classe DeepLTranslator
-│   ├── anki_client.py   # Integração com AnkiConnect
+│   ├── main.py          # Main CLI
+│   ├── translator.py    # DeepLTranslator class
+│   ├── anki_client.py   # AnkiConnect integration
 │   └── config/
 │       ├── __init__.py
-│       ├── config.json  # Configurações
-│       └── config_editor.py  # Gerenciamento de config
-├── pyproject.toml       # Configuração do pacote
-├── requirements.txt     # Dependências
-├── .env                 # Chave do DeepL (não versionar)
+│       ├── config.json  # Settings
+│       └── config_editor.py  # Config management
+├── pyproject.toml       # Package configuration
+├── requirements.txt     # Dependencies
+├── .env                 # DeepL key (do not version)
 └── README.md
 ```
 
-## Dependências
+## Dependencies
 
-- `deep-translator`: Para tradução via DeepL.
-- `requests`: Para comunicação com AnkiConnect.
-- `python-dotenv`: Para carregar variáveis de ambiente.
-- `click`: Para CLI.
-- `rich`: Para interface rica no terminal.
+- `deep-translator`: For translation via DeepL.
+- `requests`: For communication with AnkiConnect.
+- `python-dotenv`: For loading environment variables.
+- `click`: For CLI.
+- `rich`: For rich terminal interface.
 
-## Desenvolvimento
+## Development
 
-Para contribuir:
-1. Fork o repositório.
-2. Crie uma branch para sua feature.
-3. Faça commit das mudanças.
-4. Abra um Pull Request.
+To contribute:
+1. Fork the repository.
+2. Create a branch for your feature.
+3. Commit your changes.
+4. Open a Pull Request.
 
-## Licença
+## License
 
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+This project is under the MIT license. See the LICENSE file for more details.
 
-## Suporte
+## Support
 
-Se encontrar problemas:
-- Verifique se o AnkiConnect está rodando (porta 8765).
-- Confirme sua chave do DeepL.
-- Abra uma issue no GitHub.
+If you encounter issues:
+- Check that AnkiConnect is running (port 8765).
+- Confirm your DeepL key.
+- Open an issue on GitHub.

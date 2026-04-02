@@ -16,13 +16,13 @@ class AnkiClient:
         self.basic_model = config.get('anki_basic_model')
 
     def _start_anki(self):
-        """Tenta abrir o Anki se não estiver aberto"""
+        """Tries to open Anki if it is not running"""
         import ctypes
         ctypes.windll.shell32.ShellExecuteW(None, "open", self.anki_path, None, None, 1)
 
     def _wait_for_anki(self, timeout=30):
-            """Aguarda o Anki inicializar e aceitar conexões"""
-            with console.status("[yellow]Aguardando o Anki inicializar...[/yellow]"):
+            """Waits for Anki to initialize and accept connections"""
+            with console.status("[yellow]Waiting for Anki to initialize...[/yellow]"):
                 for _ in range(timeout):
                     try:
                         r = requests.post(self.url, json={"action": "version", "version": 6}, timeout=3)
@@ -34,26 +34,26 @@ class AnkiClient:
             return False
 
     def _try_open_anki(self):
-        """Tenta abrir o Anki e aguarda estar pronto. Retorna True se conseguiu."""
-        console.print("[yellow]Anki não está aberto. Tentando iniciar...[/yellow]")
+        """Tries to open Anki and waits until it is ready. Returns True if successful."""
+        console.print("[yellow]Anki is not open. Trying to start...[/yellow]")
         try:
             self._start_anki()
         except FileNotFoundError:
-            console.print(f"[red]Executável do Anki não encontrado em '{self.anki_path}'.[/red]")
+            console.print(f"[red]Anki executable not found at '{self.anki_path}'.[/red]")
             return False
         except Exception as e:
-            console.print(f"[red]Erro ao tentar abrir o Anki: {e}[/red]")
+            console.print(f"[red]Error trying to open Anki: {e}[/red]")
             return False
 
         if self._wait_for_anki():
-            console.print("[green]✓ Anki iniciado com sucesso![/green]")
+            console.print("[green]✓ Anki started successfully![/green]")
             return True
 
-        console.print("[red]✗ Anki não respondeu a tempo. Verifique se está instalado corretamente.[/red]")
+        console.print("[red]✗ Anki did not respond in time. Check if it is installed correctly.[/red]")
         return False
 
     def _request(self, payload):
-        """Executa a requisição HTTP e trata a resposta — sem retry."""
+        """Executes the HTTP request and handles the response — no retry."""
         response = requests.post(self.url, json=payload, timeout=5)
         response.raise_for_status()
         res_json = response.json()
@@ -68,8 +68,8 @@ class AnkiClient:
         except requests.exceptions.ConnectionError:
             if not self._try_open_anki():
                 raise ConnectionError(
-                    f"Não foi possível conectar ao Anki em {self.url}. "
-                    "Verifique se o Anki está instalado e o AnkiConnect está ativo."
+                    f"Could not connect to Anki at {self.url}. "
+                    "Make sure Anki is installed and AnkiConnect is active."
                 )
             return self._request(payload)
 
@@ -81,8 +81,8 @@ class AnkiClient:
 
         if self.basic_model not in models:
             raise Exception(
-                f"""Modelo '{self.basic_model}' não encontrado. Disponíveis:\n{models}\n
-                Altere o parâmetro anki_basic_model para um modelo válido."""
+                f"""Model '{self.basic_model}' not found. Available:\n{models}\n
+                Change the anki_basic_model parameter to a valid model."""
             )
 
     def create_card(self, front, back):
@@ -90,7 +90,7 @@ class AnkiClient:
         back = str(back).strip()
 
         if not front or not back:
-            raise ValueError("Front ou Back estão vazios")
+            raise ValueError("Front or Back are empty")
 
         self._ensure_model()
 
