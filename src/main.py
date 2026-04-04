@@ -1,6 +1,7 @@
 import click
 from rich.console import Console
 from rich.panel import Panel
+from rich import box
 from rich.table import Table
 from src.translator import DeepLTranslator
 from src.config.config_editor import get_config, update_setting
@@ -18,7 +19,7 @@ def cli():
 
 @cli.group()
 def config():
-    """Manages AnkiFlow settings."""
+    """Manages settings."""
     pass
 
 
@@ -66,7 +67,7 @@ def set_config(key, value):
 @click.option('--target', '-t', default='pt', help='Target language (default: pt)')
 @click.option('--save/--no-save', default=True, help='Automatically save to Anki (default: enabled)')
 def translate(text, source, target, save):
-    """Translates a word or phrase and displays it formatted."""
+    """Make a translation and save a card"""
 
     full_text = " ".join(text)
 
@@ -78,23 +79,34 @@ def translate(text, source, target, save):
     try:
         with console.status("[bold green]Querying DeepL..."):
             translator = DeepLTranslator(source, target)
-            resultado = translator(full_text)
+            result = translator(full_text)
 
-        table = Table(title="Translation Result",
-                      show_header=True, header_style="bold magenta")
-        table.add_column(f"Source ({source.upper()})", style="dim", width=20)
-        table.add_column(f"Target ({target.upper()})", style="bold cyan")
-        table.add_row(full_text, resultado)
+        source_width = None
+        target_width = None
 
-        console.print(Panel(table, expand=False, border_style="green"))
+        if len(result) >= 34:
+            source_width = 34
+            if len(full_text) >= 17:
+                target_width = 17
+        else:
+            if len(full_text)>= 15:
+                target_width = 15
+
+        table = Table(show_header=True, header_style="green",
+                      box=box.ROUNDED, border_style='grey50')
+        table.add_column(f"Source ({source.upper()})", style="bright_black", width=target_width)
+        table.add_column(f"Target ({target.upper()})", style="bold cyan", width=source_width)
+        table.add_row(full_text, result)
+
+        console.print(table)
 
         if save:
             try:
                 with console.status("[bold blue]Saving to Anki..."):
                     anki = AnkiClient()
-                    anki.create_card(front=full_text, back=resultado)
+                    anki.create_card(front=full_text, back=result)
 
-                console.print("[bold green]✔ Card saved to Anki![/bold green]")
+                console.print("[bold green]Card saved to Anki![/bold green]")
 
             except Exception as e:
                 console.print(
