@@ -11,23 +11,33 @@ from src.anki_client import AnkiClient
 console = Console()
 
 
-def response_output(full_text, result, source, target):
+def response_output(translations, source, target):
     source_width = None
     target_width = None
 
-    if len(result) >= 34:
-        source_width = 34
-        if len(full_text) >= 17:
-            target_width = 17
-    else:
-        if len(full_text)>= 15:
-            target_width = 15
+    longest_source = max(len(original) for original, _ in translations)
+    longest_target = max(len(translated) for _, translated in translations)
+
+    if longest_target >= 40:
+        source_width = 40
+    if longest_source >= 20:
+            target_width = 20
+
+    total_source_chars = sum(len(original) for original, _ in translations)
+    total_target_chars = sum(len(translated) for _, translated in translations)
 
     table = Table(show_header=True, header_style="green",
-                    box=box.ROUNDED, border_style='grey50')
-    table.add_column(f"Source ({source.upper()})", style="bright_black", width=target_width)
-    table.add_column(f"Target ({target.upper()})", style="bold cyan", width=source_width)
-    table.add_row(full_text, result)
+                  box=box.ROUNDED, border_style='grey50',
+                  show_footer=True)
+    table.add_column(f"Source ({source.upper()})", style="bright_black",
+                     width=target_width, footer=f"{total_source_chars} chars",
+                     footer_style='gray74')
+    table.add_column(f"Target ({target.upper()})", style="bold cyan",
+                     width=source_width, footer=f"{total_target_chars} chars",
+                     footer_style='gray74',)
+
+    for original, translated in translations:
+        table.add_row(original, translated)
 
     console.print(table)
 
@@ -88,40 +98,52 @@ def set_config(key, value):
 @click.option('--target', '-t', default='pt', help='Target language (default: pt)')
 @click.option('--save/--no-save', default=True, help='Automatically save to Anki (default: enabled)')
 def translate(text, source, target, save):
-    """Make a translation and save a card"""
+    """Make a translation and save a card. Use / to separate multiple terms."""
 
     full_text = " ".join(text)
 
     if not full_text:
-        console.print(
-            "[yellow]Warning:[/yellow] Enter something to translate.")
+        console.print("[yellow]Warning:[/yellow] Enter something to translate.")
         return
+
+    terms = [term.strip() for term in full_text.split("/") if term.strip()]
+
+    translations = []
 
     try:
         with console.status("[bold green]Querying DeepL..."):
             translator = DeepLTranslator(source, target)
-            result = translator(full_text)
+            for term in terms:
+                result = translator(term)
+                translations.append((term, result))
 
-        response_output(full_text, result,
-                        source, target)
+        response_output(translations, source, target)
 
         if save:
-            try:
-                with console.status("[bold blue]Saving to Anki..."):
-                    anki = AnkiClient()
-                    anki.create_card(front=full_text, back=result)
+            anki = AnkiClient()
+            errors = []
 
-                console.print("[bold green]Card saved to Anki![/bold green]")
+            with console.status("[bold blue]Saving to Anki..."):
+                for original, translated in translations:
+                    try:
+                        anki.create_card(front=original, back=translated)
+                    except Exception as e:
+                        # Truncate the term for display if it's too long
+                        label = original if len(original) <= 15 else original[:15].rsplit(" ", 1)[0] + "..."
+                        errors.append((label, str(e)))
 
-            except Exception as e:
+            saved_count = len(translations) - len(errors)
+            if saved_count > 0:
+                console.print(f"[bold green]{saved_count} card(s) saved to Anki![/bold green]")
+
+            for label, err in errors:
                 console.print(
-                    f"[yellow]Warning:[/yellow] Translated, but could not save to Anki: {e}")
+                    f"[yellow]Warning:[/yellow] Could not save '[bold]{label}[/bold]': {err}")
         else:
-            console.print("[dim]Card not saved (--no-save)[/dim]")
+            console.print("[dim]Cards not saved (--no-save)[/dim]")
 
     except Exception as e:
-        console.print(
-            Panel(f"[red]Error:[/red] {str(e)}", title="Operation Failed"))
+        console.print(Panel(f"[red]Error:[/red] {str(e)}", title="Operation Failed"))
 
 
 if __name__ == "__main__":
