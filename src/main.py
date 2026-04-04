@@ -11,6 +11,27 @@ from src.anki_client import AnkiClient
 console = Console()
 
 
+def response_output(full_text, result, source, target):
+    source_width = None
+    target_width = None
+
+    if len(result) >= 34:
+        source_width = 34
+        if len(full_text) >= 17:
+            target_width = 17
+    else:
+        if len(full_text)>= 15:
+            target_width = 15
+
+    table = Table(show_header=True, header_style="green",
+                    box=box.ROUNDED, border_style='grey50')
+    table.add_column(f"Source ({source.upper()})", style="bright_black", width=target_width)
+    table.add_column(f"Target ({target.upper()})", style="bold cyan", width=source_width)
+    table.add_row(full_text, result)
+
+    console.print(table)
+
+
 @click.group()
 def cli():
     """AnkiFlow: Translation helper and Anki integration tool."""
@@ -81,24 +102,8 @@ def translate(text, source, target, save):
             translator = DeepLTranslator(source, target)
             result = translator(full_text)
 
-        source_width = None
-        target_width = None
-
-        if len(result) >= 34:
-            source_width = 34
-            if len(full_text) >= 17:
-                target_width = 17
-        else:
-            if len(full_text)>= 15:
-                target_width = 15
-
-        table = Table(show_header=True, header_style="green",
-                      box=box.ROUNDED, border_style='grey50')
-        table.add_column(f"Source ({source.upper()})", style="bright_black", width=target_width)
-        table.add_column(f"Target ({target.upper()})", style="bold cyan", width=source_width)
-        table.add_row(full_text, result)
-
-        console.print(table)
+        response_output(full_text, result,
+                        source, target)
 
         if save:
             try:
